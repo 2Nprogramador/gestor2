@@ -158,8 +158,21 @@ def visualizar_dados():
     estoque_atualizado_df = calcular_estoque_atualizado()
     st.dataframe(estoque_atualizado_df)
 
+    # Calcula o lucro total corrigido
+    # Primeiro, mescla as vendas com o registro de estoque para obter o custo de cada produto vendido
+    vendas_com_custo_df = pd.merge(vendas_df, registro_estoque_df[["Produto", "Lote", "Custo (R$)"]], on=["Produto", "Lote"], how="left")
+
+    # Calcula o custo total das unidades vendidas
+    vendas_com_custo_df["Custo Total Vendido (R$)"] = vendas_com_custo_df["Quantidade"] * vendas_com_custo_df["Custo (R$)"]
+
+    # Calcula o valor total vendido
+    valor_total_vendido = vendas_com_custo_df["Valor Total (R$)"].sum()
+
+    # Calcula o custo total das unidades vendidas
+    custo_total_vendido = vendas_com_custo_df["Custo Total Vendido (R$)"].sum()
+
     # Calcula o lucro total
-    lucro_total = vendas_df["Valor Total (R$)"].sum() - estoque_atualizado_df["Custos Totais"].sum()
+    lucro_total = valor_total_vendido - custo_total_vendido
 
     # Calcula o produto mais vendido
     produto_mais_vendido = vendas_df.groupby("Produto")["Quantidade"].sum().idxmax()
